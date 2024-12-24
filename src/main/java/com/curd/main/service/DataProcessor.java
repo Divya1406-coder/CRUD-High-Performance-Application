@@ -6,8 +6,6 @@ import java.util.concurrent.Executor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -32,7 +30,6 @@ public class DataProcessor {
     private final Timer updateTimer = Metrics.globalRegistry.timer("data.update.time");
     private final Timer deleteTimer = Metrics.globalRegistry.timer("data.delete.time");
 
-    @Autowired
     public DataProcessor(DataRepository dataRepository, RedisTemplate<String, Object> redisTemplate, Executor taskExecutor) {
         this.dataRepository = dataRepository;
         this.redisTemplate = redisTemplate;
@@ -66,7 +63,6 @@ public class DataProcessor {
         });
     }
 
-    @CachePut(value = "data", key = "#key")
     @Retryable(value = Exception.class, maxAttempts = 3, backoff = @Backoff(delay = 2000))
     public void updateData(String key, String value) {
         updateTimer.record(() -> {
